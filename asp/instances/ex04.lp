@@ -1,24 +1,38 @@
-cell(1..5,1..5).
+%natalia.schendzielorz@uni-potsdam.de
+%Jeder Hint kann bis zu vier Adjazente schwarze Felder haben
+go(0,0).
+go(1,0).
+go(0,1).
+go(1,1).
 
-hint(0,2,2).
-hint(0,3,2).
-hint(1,1,2).
-hint(1,4,1).
-hint(2,1,2).
-hint(2,2,1).
-hint(2,3,1).
-hint(3,1,2).
-hint(3,2,1).
-hint(3,3,1).
-hint(4,1,2).
-hint(4,4,2).
-hint(5,2,2).
+%generiere für jedes Feld eine schwarze oder weisse Färbung
+{black(X,Y);white(X,Y)}=1 :- cell(X,Y).
+%acc.: die Anzahl schwarzer Felder entspricht dem hint
+blackAdjacent(X+X1,Y+Y1,X,Y):-hint(X,Y,_),go(X1,Y1),black(X+X1,Y+Y1).
+:- not S = #count{X1,Y1,X,Y:blackAdjacent(X1,Y1,X,Y)}, hint(X,Y,S).
 
-% Answer: 1
-% black(1,1) black(1,2) black(1,3) black(1,4) black(3,1) black(3,2) black(3,4) black(4,5) black(5,1) black(5,2) black(5,3) black(5,5)
-% Answer: 2
-% black(1,1) black(1,2) black(1,3) black(1,4) black(3,1) black(3,2) black(3,4) black(3,5) black(4,5) black(5,1) black(5,2) black(5,3) black(5,5)
-% Answer: 3
-% black(1,1) black(1,2) black(1,3) black(1,4) black(3,1) black(3,2) black(3,4) black(5,1) black(5,2) black(5,3) black(5,4) black(5,5)
-% Answer: 4
-% black(1,1) black(1,2) black(1,3) black(1,4) black(3,1) black(3,2) black(3,4) black(3,5) black(5,1) black(5,2) black(5,3) black(5,4) black(5,5)
+  
+    
+%whiteCells(S):-S=#count{W1,W2:white(W1,W2)}.
+%pathLength(L) :- L=S-1, whiteCells(S).
+
+%Setze Startknoten für das Zählen der weißen Felder in "Ecke"    
+startX(X):- X=#max{W1:white(W1,_)}.
+startY(Y):- Y=#max{W2:white(W1,W2),startX(W1)}.
+startXY(X,Y):-startX(X),startY(Y).
+
+%Weisse Felder können adjazente Weisse Felder in alle Himmelsrichtungen haben    
+goW(0,1). 
+goW(1,0). 
+goW(0,-1). 
+goW(-1,0).
+    
+%Rekursion: Zuerst alle Nachbarn des ersten Knotens erzeugen (N;S;O;W)
+path(SX,SY,SX+W1,SY+W2):-startXY(SX,SY), white(SX,SY), white(SX+W1,SY+W2), goW(W1,W2).
+%Nachbarn erzeugen für Knoten, die bereits auf Pfad sind, gehe ein Feld weiter (N;S;O;W)
+path(X,Y,X+W1,Y+W2):-path(_,_,X,Y), white(X,Y), white(X+W1,Y+W2), goW(W1,W2).
+:-not path(X,Y,_,_), white(X,Y).
+:-not path(_,_,X,Y), white(X,Y).
+    
+#show black/2.
+    
